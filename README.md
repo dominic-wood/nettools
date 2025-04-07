@@ -13,12 +13,16 @@ Check for open ports on a given host (e.g. 22, 80, 443). Fast, threaded, and col
 ### 🌐 DNS Lookup
 Get A, AAAA, MX, and NS records for any domain using dnspython.
 
+### 🧭 Traceroute
+Trace the path your connection takes to reach a domain or IP. View each hop, including IPs, hostnames, and response times.
+
 ## 📸 Screenshots
 
 <p align="center">
-  <img src="gui/assets/dns_lookup.png" width="500" style="margin-bottom: -70px;">
-  <img src="gui/assets/port_scanner.png" width="500" style="margin-bottom: -70px;">
-  <img src="gui/assets/dns_lookup.png" width="500">
+  <img src="assets/ping_sweeper.png" width="500" style="margin-bottom: -70px;">
+  <img src="assets/port_scanner.png" width="500" style="margin-bottom: -70px;">
+  <img src="assets/dns_lookup.png" width="500" style="margin-bottom: -70px;">
+  <img src="assets/traceroute.png" width="500">
 </p>
 
 ## 🧱 Tech Stack
@@ -31,10 +35,10 @@ Get A, AAAA, MX, and NS records for any domain using dnspython.
 ## 🧰 Setup
 
 ```bash
-git clone https://github.com/yourname/nettools.git
+git clone https://github.com/dominic-wood/nettools.git
 cd nettools
 pip install -r requirements.txt
-python -m gui.main
+python run.py
 ```
 
 ## 📦 Requirements
