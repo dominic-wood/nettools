@@ -1,53 +1,56 @@
-# Design Notes for NetTools App
+# NetTools – Design Notes
 
-### 1. **Overview**
+## 1. Overview
 
-The NetTools App is a simple network utility tool that includes the following features:
+NetTools is a GUI app that combines essential network tools:
 
-- **Ping Sweeper**: Sweep a subnet to identify online devices.
-- **Port Scanner**: Scan a range of ports on a given host to check for open ports.
-- **DNS Lookup**: Perform DNS lookups to resolve domain names.
-- **Traceroute**: Trace the network path to a destination.
+- **Ping Sweeper** – Identify online devices in a subnet.
+- **Port Scanner** – Check for open ports on a target host.
+- **DNS Lookup** – Resolve domain names to IPs.
+- **Traceroute** – Map the path to a destination.
 
-### 2. **App Architecture**
+## 2. Architecture
 
-#### 2.1 **Frontend (GUI)**
-The frontend is built using **PySide6 (Qt for Python)** to provide a cross-platform graphical user interface. It includes:
+### 2.1 Frontend (GUI)
 
-- **Tabs for each feature** (Ping Sweeper, Port Scanner, DNS Lookup, Traceroute).
-- Interactive input fields for user configuration (e.g., IP addresses, port ranges).
-- **Output text areas** for displaying the results (ping results, port scan results, etc.).
-  
-#### 2.2 **Backend (Functionality)**
-Each feature is implemented as a separate module within the `nettools/` directory:
+Built with **PySide6 (Qt for Python)**, the GUI includes:
 
-- **ping_sweeper.py**: Performs ICMP pings across a range of IP addresses.
-- **port_scanner.py**: Scans specified ports on a given host using `socket` connections.
-- **dns_lookup.py**: Uses the `dns.resolver` library to resolve domain names.
-- **traceroute.py**: Implements a basic traceroute by sending packets with increasing TTL values and logging the responses.
+- A tabbed layout for each tool
+- Input fields for IPs, ports, domains, etc.
+- Output areas to display results
 
-### 3. **App Design Decisions**
+### 2.2 Backend (Logic)
 
-#### 3.1 **Choice of Libraries**
-- **PySide6 (Qt for Python)** was chosen for the GUI due to its cross-platform capabilities and its ability to create a rich and responsive UI.
-- **PyInstaller** is used to bundle the app into a standalone executable, which simplifies distribution.
-- **`pyobjc`** is used to interact with macOS-specific components (like setting the Dock icon).
+Each tool is modular and lives in the `nettools/` directory:
 
-#### 3.2 **Icon Design**
-The app icon is designed to represent a network utility tool, with a simple and recognizable design. It is used in both the app window and in the macOS Dock.
+- `ping_sweeper.py` – ICMP ping sweeps across subnets
+- `port_scanner.py` – Uses sockets to check open ports
+- `dns_lookup.py` – DNS resolution via `dns.resolver`
+- `traceroute.py` – Sends packets with increasing TTLs to trace routes
 
-#### 3.3 **Portability Considerations**
-- The app is packaged as a **single file** on macOS using **PyInstaller** to ensure ease of deployment.
-- The `AppKit` library is used to manage the **Dock icon**, which is a macOS-specific feature.
-  
-#### 3.4 **Error Handling**
-The app is designed to gracefully handle errors such as invalid input or network errors. For example:
-- Invalid IP addresses or port ranges result in error messages.
-- Network issues during port scanning or traceroute result in appropriate messages displayed in the UI.
+## 3. Key Design Decisions
 
-### 4. **Future Enhancements**
+### 3.1 Libraries
 
-- **Add more network tools** like HTTP request testing, bandwidth monitoring, etc.
-- **Support for additional platforms** (Linux, Windows) by testing and ensuring cross-platform compatibility.
-- **Improved error handling** to catch specific network-related errors more effectively.
+- **PySide6** for a cross-platform GUI
+- **dnspython** for DNS queries
+- **PyInstaller** to bundle the app
+- **pyobjc + AppKit** (macOS) to set a Dock icon
 
+### 3.2 Packaging
+
+- On macOS, the app is bundled as a single `.app` file using PyInstaller
+- Custom Dock icon is set via `AppKit`
+
+### 3.3 Error Handling
+
+Handled gracefully through the UI:
+
+- Invalid IPs or port ranges trigger clear messages
+- DNS failures and network errors are caught and displayed
+
+## 4. Planned Features
+
+- More tools (e.g., HTTP requests, bandwidth checks)
+- Better cross-platform support (Windows, Linux)
+- Smarter error messages and exception handling
