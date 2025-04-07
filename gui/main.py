@@ -5,7 +5,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import QThread, Signal, QObject
 
-from PySide6.QtGui import QTextCharFormat, QColor
+from PySide6.QtGui import QTextCharFormat, QColor, QIcon
 from nettools.ping_sweeper import ping_sweep
 from nettools.port_scanner import port_scan, COMMON_PORTS
 from nettools.dns_lookup import perform_dns_lookup
@@ -64,7 +64,7 @@ class TracerouteWorker(QObject):
 class NetToolsApp(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("NetTools")
+        self.setWindowTitle("Net Tools")
         self.setMinimumSize(500, 400)
 
         self.tabs = QTabWidget()
@@ -72,6 +72,9 @@ class NetToolsApp(QWidget):
         self.tabs.addTab(self.port_tab_ui(), "Port Scanner")
         self.tabs.addTab(self.dns_tab_ui(), "DNS Lookup")
         self.tabs.addTab(self.traceroute_tab_ui(), "Traceroute")
+
+        self.setWindowTitle("Net Tools")
+        self.setWindowIcon(QIcon("assets/icon.icns"))  
 
         layout = QVBoxLayout()
         layout.addWidget(self.tabs)

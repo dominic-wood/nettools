@@ -1,3 +1,8 @@
+
+<p align="center">
+  <img src="assets/nettools_logo.png" alt="NetTools Logo" width="250">
+</p>
+
 # NetTools - Network Utility Suite 🛠️🌐
 
 NetTools is a Python-based GUI application that bundles essential network utilities into a clean, beginner-friendly interface. It’s designed for sysadmins, students, and anyone curious about their network.
