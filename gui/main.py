@@ -9,6 +9,7 @@ from PySide6.QtGui import QTextCharFormat, QColor
 from nettools.ping_sweeper import ping_sweep
 from nettools.port_scanner import port_scan, COMMON_PORTS
 from nettools.dns_lookup import perform_dns_lookup
+from nettools.traceroute import run_traceroute
 
 # ---------- Thread Workers ----------
 
@@ -47,6 +48,17 @@ class DnsLookupWorker(QObject):
         result = perform_dns_lookup(self.domain)
         self.finished.emit(result)
 
+class TracerouteWorker(QObject):
+    finished = Signal(object)
+
+    def __init__(self, host):
+        super().__init__()
+        self.host = host
+
+    def run(self):
+        result = run_traceroute(self.host)
+        self.finished.emit(result)
+
 # ---------- Main GUI ----------
 
 class NetToolsApp(QWidget):
@@ -59,6 +71,7 @@ class NetToolsApp(QWidget):
         self.tabs.addTab(self.ping_tab_ui(), "Ping Sweeper")
         self.tabs.addTab(self.port_tab_ui(), "Port Scanner")
         self.tabs.addTab(self.dns_tab_ui(), "DNS Lookup")
+        self.tabs.addTab(self.traceroute_tab_ui(), "Traceroute")
 
         layout = QVBoxLayout()
         layout.addWidget(self.tabs)
@@ -237,6 +250,47 @@ class NetToolsApp(QWidget):
             for record in records:
                 self.append_colored(self.dns_output, f"  {record}", "green" if "Error" not in record else "red")
 
+    # --- Traceroute Tab ---
+    def traceroute_tab_ui(self):
+        widget = QWidget()
+        layout = QVBoxLayout()
+
+        self.trace_input = QLineEdit()
+        self.trace_input.setPlaceholderText("Enter domain or IP (e.g. 8.8.8.8)")
+
+        self.trace_button = QPushButton("Trace Route")
+        self.trace_output = QTextEdit()
+        self.trace_output.setReadOnly(True)
+
+        self.trace_button.clicked.connect(self.run_traceroute)
+
+        layout.addWidget(self.trace_input)
+        layout.addWidget(self.trace_button)
+        layout.addWidget(self.trace_output)
+        widget.setLayout(layout)
+        return widget
+    
+    def run_traceroute(self):
+        host = self.trace_input.text().strip()
+        self.trace_output.clear()
+        self.trace_output.append("Tracing route...")
+
+        self.trace_thread = QThread()
+        self.trace_worker = TracerouteWorker(host)
+        self.trace_worker.moveToThread(self.trace_thread)
+
+        self.trace_thread.started.connect(self.trace_worker.run)
+        self.trace_worker.finished.connect(self.display_traceroute)
+        self.trace_worker.finished.connect(self.trace_thread.quit)
+        self.trace_worker.finished.connect(self.trace_worker.deleteLater)
+        self.trace_thread.finished.connect(self.trace_thread.deleteLater)
+
+        self.trace_thread.start()
+
+    def display_traceroute(self, lines):
+        self.trace_output.clear()
+        for line in lines:
+            self.append_colored(self.trace_output, line, "green" if "*" not in line else "red")
 
 
 # ---------- Run App ----------
