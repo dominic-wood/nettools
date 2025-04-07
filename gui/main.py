@@ -8,7 +8,7 @@ from PySide6.QtCore import QThread, Signal, QObject
 from PySide6.QtGui import QTextCharFormat, QColor
 from nettools.ping_sweeper import ping_sweep
 from nettools.port_scanner import port_scan, COMMON_PORTS
-
+from nettools.dns_lookup import perform_dns_lookup
 
 # ---------- Thread Workers ----------
 
@@ -36,6 +36,17 @@ class PortScanWorker(QObject):
         result = port_scan(self.host, self.port_range)
         self.finished.emit(result)
 
+class DnsLookupWorker(QObject):
+    finished = Signal(object)
+
+    def __init__(self, domain):
+        super().__init__()
+        self.domain = domain
+
+    def run(self):
+        result = perform_dns_lookup(self.domain)
+        self.finished.emit(result)
+
 # ---------- Main GUI ----------
 
 class NetToolsApp(QWidget):
@@ -47,6 +58,7 @@ class NetToolsApp(QWidget):
         self.tabs = QTabWidget()
         self.tabs.addTab(self.ping_tab_ui(), "Ping Sweeper")
         self.tabs.addTab(self.port_tab_ui(), "Port Scanner")
+        self.tabs.addTab(self.dns_tab_ui(), "DNS Lookup")
 
         layout = QVBoxLayout()
         layout.addWidget(self.tabs)
@@ -179,6 +191,53 @@ class NetToolsApp(QWidget):
             service_text = f" ({name})" if name else ""
             text = f"Port {port}: {status}{service_text}"
             self.append_colored(self.port_output, text, color)
+
+    # --- DNS Lookup Tab ---
+
+    def dns_tab_ui(self):
+        widget = QWidget()
+        layout = QVBoxLayout()
+
+        self.dns_input = QLineEdit()
+        self.dns_input.setPlaceholderText("Enter domain (e.g. google.com)")
+
+        self.dns_button = QPushButton("Lookup")
+        self.dns_output = QTextEdit()
+        self.dns_output.setReadOnly(True)
+
+        self.dns_button.clicked.connect(self.run_dns_lookup)
+
+        layout.addWidget(self.dns_input)
+        layout.addWidget(self.dns_button)
+        layout.addWidget(self.dns_output)
+        widget.setLayout(layout)
+        return widget
+    
+    def run_dns_lookup(self):
+        domain = self.dns_input.text().strip()
+        self.dns_output.clear()
+        self.dns_output.append("Looking up DNS records...")
+
+        self.dns_thread = QThread()
+        self.dns_worker = DnsLookupWorker(domain)
+        self.dns_worker.moveToThread(self.dns_thread)
+
+        self.dns_thread.started.connect(self.dns_worker.run)
+        self.dns_worker.finished.connect(self.display_dns_results)
+        self.dns_worker.finished.connect(self.dns_thread.quit)
+        self.dns_worker.finished.connect(self.dns_worker.deleteLater)
+        self.dns_thread.finished.connect(self.dns_thread.deleteLater)
+
+        self.dns_thread.start()
+
+    def display_dns_results(self, results):
+        self.dns_output.clear()
+        for record_type, records in results.items():
+            self.append_colored(self.dns_output, f"{record_type} Records:", "blue")
+            for record in records:
+                self.append_colored(self.dns_output, f"  {record}", "green" if "Error" not in record else "red")
+
+
 
 # ---------- Run App ----------
 
